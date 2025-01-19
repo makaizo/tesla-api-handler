@@ -1,0 +1,6 @@
+
+# Build files
+bin/
+obj/
+*/credentials.json
+credentials.json
