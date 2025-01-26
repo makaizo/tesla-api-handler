@@ -1,0 +1,4 @@
+
+
+ dotnet add package MQTTnet
+ dotnet add package MQTTnet.Extensions.ManagedClient --version 4.0.2.221

@@ -1,149 +1,72 @@
 ﻿using System;
-using System.Net.Http;
-using System.Text.Json;
+using System.Dynamic;
 using System.Threading.Tasks;
-using System.IO;
-
-public class TeslaApiClient
-{
-    private readonly HttpClient _httpClient;
-    private readonly string _authToken;
-    private readonly string _baseUrl = "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/vehicles";
-
-    public TeslaApiClient(string authToken)
-    {
-        _httpClient = new HttpClient();
-        _authToken = authToken;
-    }
-
-    public async Task<int?> GetBatteryLevelAsync(string vehicleTag)
-    {
-        string url = $"{_baseUrl}/{vehicleTag}/vehicle_data";
-
-        // Authorizationヘッダーを設定
-        _httpClient.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
-
-        HttpResponseMessage response = await _httpClient.GetAsync(url);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception($"API call failed with status code: {response.StatusCode}");
-        }
-
-        string json = await response.Content.ReadAsStringAsync();
-
-        // JSONレスポンスをパース
-        using var doc = JsonDocument.Parse(json);
-        JsonElement root = doc.RootElement;
-
-        if (root.TryGetProperty("response", out JsonElement responseElement) &&
-            responseElement.TryGetProperty("charge_state", out JsonElement chargeState) &&
-            chargeState.TryGetProperty("battery_level", out JsonElement batteryLevel))
-        {
-            if (batteryLevel.ValueKind == JsonValueKind.Null)
-            {
-                return null;
-            }
-
-            return batteryLevel.GetInt32();
-        }
-
-        throw new Exception("Failed to retrieve data from response.");
-    }
-    public async Task<String?> GetLocationAsync(string vehicleTag)
-    {
-        string url = $"{_baseUrl}/{vehicleTag}/vehicle_data?endpoints=location_data";
-
-        // Authorizationヘッダーを設定
-        _httpClient.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
-
-        HttpResponseMessage response = await _httpClient.GetAsync(url);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception($"API call failed with status code: {response.StatusCode}");
-        }
-
-        string json = await response.Content.ReadAsStringAsync();
-
-        // JSONレスポンスをパース
-        using var doc = JsonDocument.Parse(json);
-        JsonElement root = doc.RootElement;
-
-        if (root.TryGetProperty("response", out JsonElement responseElement) &&
-        responseElement.TryGetProperty("drive_state", out JsonElement locationData))
-        {
-            if (locationData.ValueKind == JsonValueKind.Null)
-            {
-                return null;
-            }
-
-            return locationData.GetRawText();
-        }
-
-        throw new Exception("Failed to retrieve data from response.");
-    }
-    public async Task<int?> GetSpeedAsync(string vehicleTag)
-    {
-        string url = $"{_baseUrl}/{vehicleTag}/vehicle_data";
-
-        // Authorizationヘッダーを設定
-        _httpClient.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
-
-        HttpResponseMessage response = await _httpClient.GetAsync(url);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception($"API call failed with status code: {response.StatusCode}");
-        }
-
-        string json = await response.Content.ReadAsStringAsync();
-
-        // JSONレスポンスをパース
-        using var doc = JsonDocument.Parse(json);
-        JsonElement root = doc.RootElement;
-
-        if (root.TryGetProperty("response", out JsonElement responseElement) &&
-        responseElement.TryGetProperty("drive_state", out JsonElement driveState) &&
-        driveState.TryGetProperty("speed", out JsonElement speed))
-        {
-
-            if (speed.ValueKind == JsonValueKind.Null)
-            {
-                return null;
-            }
-
-            return speed.GetInt32();
-        }
-
-        throw new Exception("Failed to retrieve data from response.");
-    }
-}
+using TeslaAPIHandler;
+using TeslaAPIHandler.Services;
 
 public class Program
 {
     public static async Task Main(string[] args)
     {
-        Console.WriteLine($"Start Main");
-        string configFilePath = "credentials.json";  // config.json ファイルのパス
-        var config = ReadConfig(configFilePath);
+        Console.WriteLine("Start Main");
 
-        string authToken = config.authToken;
-        string vehicleTag = config.vin;
+        // get vin and access_token
+        string configFilePath = "credentials.json";
+        var config = ConfigReader.ReadConfig(configFilePath);
 
-        var client = new TeslaApiClient(authToken);
+        IAuthTokenHandler authHandler = new AuthTokenHandler();
+        var accessToken = await authHandler.RefreshTokenAsync(config.refreshToken, config.clientID);
+        // Console.WriteLine($"New token: {accessToken}");
+
+        // api reader client: unity -> tesla Fleet API -> vehicle
+        ITeslaApiReader apiReader = new TeslaApiReader(accessToken, config.vin);
+        // api writer client: unity -> MQTT broker(beebotte server) -> tesla vehicle Commands Proxy on RasPi -> tesla Fleet API -> vehicle
+        ITeslaApiWriter apiWriter = new TeslaApiWriter(config.beebotteToken, accessToken, config.vin);
 
         try
         {
-            int? batteryLevel = await client.GetBatteryLevelAsync(vehicleTag);
-            Console.WriteLine($"Battery Level: {batteryLevel}%");
-            String? location_data = await client.GetLocationAsync(vehicleTag);
-            Console.WriteLine($"Location: {location_data}");
-            int? speed = await client.GetSpeedAsync(vehicleTag);
+
+            int? batteryLevel = await apiReader.GetBatteryLevelAsync();
+            Console.WriteLine($"Battery Level: {batteryLevel}");
+
+            string? location = await apiReader.GetLocationAsync();
+            Console.WriteLine($"Location: {location}");
+
+            int? speed = await apiReader.GetSpeedAsync();
             Console.WriteLine($"Speed: {speed}");
+
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+
+        try
+        {
+            await apiWriter.InitializeAsync();
+
+            // WakeUpは実際に実行されるのでデバッグ時に何度も実行しないよう注意
+            // bool result = await apiWriter.WakeUpAsync();
+            // Console.WriteLine($"WakeUp: {result}");
+
+            // 他のコマンドはラズパイのサーバ起動後に、実行されるため、デバッグ時に何度も実行しても問題ない
+            // await apiWriter.ExecuteAsync(command: "actuate_trunk", data: new { which_trunk = "front" });
+            await apiWriter.ExecuteAsync(command: "door_lock");
+            // await apiWriter.ExecuteAsync(command: "door_unlock");
+            // await apiWriter.ExecuteAsync(command: "flash_lights");
+            // await apiWriter.ExecuteAsync(command: "window_control", data: new { lat = 45, lon = 45, command = "close" });
+
+            // // remote_boombox
+            // //  Sound IDs:
+            // //      0:random fart 
+            // //      2000: locate ping
+            // await apiWriter.ExecuteAsync(command: "remote_boombox", data: new { sound = 0 });
+            // await apiWriter.ExecuteAsync(command: "auto_conditioning_start");
+            // await apiWriter.ExecuteAsync(command: "auto_conditioning_stop");
+            // await apiWriter.ExecuteAsync(command: "media_toggle_playback");
+            // await apiWriter.ExecuteAsync(command: "adjust_volume", data: new { volume = 5 });
+            // await apiWriter.ExecuteAsync(command: "set_bioweapon_mode", data: new { on = true, manual_override = true });
 
         }
         catch (Exception ex)
@@ -151,37 +74,4 @@ public class Program
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
-    // config.jsonを読み込んで、必要な情報を返すメソッド
-    private static (string authToken, string vin) ReadConfig(string filePath)
-    {
-        try
-        {
-            string json = File.ReadAllText(filePath);
-            using var doc = JsonDocument.Parse(json);
-            JsonElement root = doc.RootElement;
-
-            string authToken = root.GetProperty("authToken").GetString();
-            string vin = root.GetProperty("vin").GetString();
-
-            return (authToken, vin);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error reading config file: {ex.Message}");
-            throw;
-        }
-    }
 }
-
-
-// string url = "https://umayadia-apisample.azurewebsites.net/api/persons/Shakespeare";
-
-// using (System.Net.Http.HttpClient client = new System.Net.Http.HttpClient())
-// {
-//     using (System.Net.Http.HttpResponseMessage response = client.GetAsync(url).Result)
-//     {
-//         string responseBody = response.Content.ReadAsStringAsync().Result;
-//         System.Diagnostics.Debug.WriteLine(responseBody);
-//     }
-// }
