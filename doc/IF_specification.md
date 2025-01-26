@@ -16,6 +16,3 @@ https://developer.tesla.com/#usage-based-pricing
 * $0.01/requestほど
   * カテゴリによって違う
   * 一番高いwake_upで$1/50requests
-
-
-事前にwake_upする必要がある
