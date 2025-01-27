@@ -10,7 +10,7 @@ namespace TeslaAPIHandler.Services
     {
         private readonly HttpClient _httpClient;
 
-        private const string RefreshUrl = "https://auth.tesla.com/oauth2/v3/token";
+        private const string refreshUrl = "https://auth.tesla.com/oauth2/v3/token";
 
         public AuthTokenHandler()
         {
@@ -29,25 +29,24 @@ namespace TeslaAPIHandler.Services
             string jsonContent = JsonSerializer.Serialize(requestBody);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage response = await _httpClient.PostAsync(RefreshUrl, content);
+            HttpResponseMessage response = await _httpClient.PostAsync(refreshUrl, content);
 
-            if (response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                string jsonResponse = await response.Content.ReadAsStringAsync();
-                using var doc = JsonDocument.Parse(jsonResponse);
-                JsonElement root = doc.RootElement;
-
-                if (root.TryGetProperty("access_token", out JsonElement accessTokenElement))
-                {
-                    return accessTokenElement.GetString();
-                }
-                else
-                {
-                    throw new Exception("[AUTH] Refresh token expired.");
-                }
+                var errorDetails = await response.Content.ReadAsStringAsync();
+                throw new Exception($"[AUTH] Token refresh failed. Status: {response.StatusCode}, Reason: {response.ReasonPhrase}, Response: {errorDetails}");
             }
 
-            throw new Exception("[AUTH] Token refresh failed.");
+            string jsonResponse = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(jsonResponse);
+            JsonElement root = doc.RootElement;
+
+            if (!root.TryGetProperty("access_token", out JsonElement accessTokenElement))
+            {
+                throw new Exception($"[AUTH] Refresh token expired. Response: {jsonResponse}");
+            }
+
+            return accessTokenElement.GetString();
         }
     }
 

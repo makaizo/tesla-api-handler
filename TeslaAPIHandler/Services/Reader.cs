@@ -28,7 +28,8 @@ namespace TeslaAPIHandler.Services
             HttpResponseMessage response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"[READ] API call failed with status code: {response.StatusCode}");
+                string errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"[READ] API call failed with status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, Response: {errorContent}");
             }
 
             string json = await response.Content.ReadAsStringAsync();
@@ -50,7 +51,8 @@ namespace TeslaAPIHandler.Services
             HttpResponseMessage response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"[READ] API call failed with status code: {response.StatusCode}");
+                string errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"[READ] API call failed with status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, Response: {errorContent}");
             }
 
             string json = await response.Content.ReadAsStringAsync();
@@ -71,7 +73,8 @@ namespace TeslaAPIHandler.Services
             HttpResponseMessage response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"[READ] API call failed with status code: {response.StatusCode}");
+                string errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"[READ] API call failed with status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, Response: {errorContent}");
             }
 
             string json = await response.Content.ReadAsStringAsync();
