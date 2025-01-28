@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace TeslaAPIHandler.Services
 {
     public interface ITeslaApiWriter
@@ -5,6 +7,5 @@ namespace TeslaAPIHandler.Services
         Task InitializeAsync();
         Task<bool> WakeUpAsync();
         Task ExecuteAsync(string command, object? data = null);
-
     }
 }
