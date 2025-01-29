@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 
-public static class ConfigReader
+public static class ConfigHandler
 {
     public static (string refreshToken, string vin, string beebotteToken, string clientID) ReadConfig(string filePath)
     {

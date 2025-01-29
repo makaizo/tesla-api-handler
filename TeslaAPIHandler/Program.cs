@@ -13,7 +13,7 @@ public class Program
 
         // get vin and access_token
         string configFilePath = "credentials.json";
-        var config = ConfigReader.ReadConfig(configFilePath);
+        var config = ConfigHandler.ReadConfig(configFilePath);
 
         string accessToken;
         string refreshToken;
@@ -25,12 +25,29 @@ public class Program
             (accessToken, refreshToken) = await authHandler.RefreshTokenAsync(config.refreshToken, config.clientID);
             // Console.WriteLine($"New token: {accessToken}");
             // 新しいリフレッシュトークンをファイルに書き込む
-            ConfigReader.WriteConfig(configFilePath, refreshToken);
+            ConfigHandler.WriteConfig(configFilePath, refreshToken);
         }
         catch (Exception ex)
         {
             accessToken = "fallback_token"; // set a fake token when error occurred
             Console.WriteLine($"Error: {ex.Message}");
+
+            // Console.WriteLine("Retry refresh token");
+            // try
+            // {
+
+            //     (accessToken, refreshToken) = await authHandler.RefreshTokenAsync(config.refreshToken, config.clientID);
+            //     // Console.WriteLine($"New token: {accessToken}");
+            //     // 新しいリフレッシュトークンをファイルに書き込む
+            //     ConfigHandler.WriteConfig(configFilePath, refreshToken);
+            // }
+            // catch (Exception ex2)
+            // {
+            //     Console.WriteLine($"Error: {ex2.Message}");
+            //     return;
+            // }
+
+
         }
 
 
