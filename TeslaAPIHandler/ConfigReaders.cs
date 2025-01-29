@@ -25,4 +25,32 @@ public static class ConfigReader
             throw;
         }
     }
+    public static void WriteConfig(string filePath, string newRefreshToken)
+    {
+        try
+        {
+            // 既存の設定を読み込む（refreshToken以外はそのまま保持）
+            var (oldRefreshToken, vin, beebotteToken, clientID) = ReadConfig(filePath);
+
+            // 更新するデータ
+            var updatedConfig = new
+            {
+                refreshToken = newRefreshToken,  // 更新
+                vin = vin,  // そのまま
+                beebotteToken = beebotteToken,  // そのまま
+                clientID = clientID  // そのまま
+            };
+
+            string json = JsonSerializer.Serialize(updatedConfig, new JsonSerializerOptions { WriteIndented = true });
+
+            // JSONをファイルに書き込む
+            File.WriteAllText(filePath, json);
+
+            Console.WriteLine("Config file updated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error writing config file: {ex.Message}");
+        }
+    }
 }

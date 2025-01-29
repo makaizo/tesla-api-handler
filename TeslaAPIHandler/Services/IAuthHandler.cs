@@ -4,7 +4,7 @@ namespace TeslaAPIHandler.Services
 
     public interface IAuthTokenHandler
     {
-        Task<string> RefreshTokenAsync(string refreshToken, string clientID);
+        Task<(string accessToken, string refreshToken)> RefreshTokenAsync(string refreshToken, string clientID);
     }
 
 }
