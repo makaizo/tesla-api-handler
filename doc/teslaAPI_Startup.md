@@ -181,6 +181,28 @@ curl --cacert ./config/tls-cert.pem     --header 'Content-Type: application/json
 ![alt text](img/image11.png)
 
 
+# 0126
+## ラズパイへのvehicle-commandのインストール
+windows pcでローカルホストにアクセスできないエラーから、ラズパイを使うことになった。
+コマンドプロンプトで実行しても、同様のエラーで詰まった。PCのセキュリティ対策によるものと思われ、対応が難しい。
+![](/doc/images/2025-01-26-23-46-55.png)
+![](/doc/images/2025-01-26-23-49-24.png)
+
+### Installing locally
+コマンドを以下に変更。
+```
+env GOARCH=arm64 GOOS=linux CGO_ENABLED=1 go build ./...
+env GOARCH=arm64 GOOS=linux CGO_ENABLED=1 go install ./...
+```
+
+### Running the proxy server
+~/go/bin直下にないためコマンドが使えなかった。
+~/go/bin/linux_arm64へパスを通すことで、コマンドが使えるようになる。
+ ![](/doc/images/2025-01-26-23-40-57.png)
+```
+echo 'export PATH=$PATH:~/go/bin/linux_arm64' >> ~/.bashrc
+source ~/.bashrc
+```
 
 # コマンドメモ
 
