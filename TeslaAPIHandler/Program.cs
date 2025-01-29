@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Dynamic;
 using System.Threading.Tasks;
+using Microsoft.Win32.SafeHandles;
 using TeslaAPIHandler;
 using TeslaAPIHandler.Services;
 
@@ -12,11 +13,29 @@ public class Program
 
         // get vin and access_token
         string configFilePath = "credentials.json";
-        var config = ConfigReader.ReadConfig(configFilePath);
+        var config = ConfigHandler.ReadConfig(configFilePath);
+
+        string accessToken;
+        string refreshToken;
 
         IAuthTokenHandler authHandler = new AuthTokenHandler();
-        var accessToken = await authHandler.RefreshTokenAsync(config.refreshToken, config.clientID);
-        // Console.WriteLine($"New token: {accessToken}");
+
+        try
+        {
+            (accessToken, refreshToken) = await authHandler.RefreshTokenAsync(config.refreshToken, config.clientID);
+            // Console.WriteLine($"New token: {accessToken}");
+            // 新しいリフレッシュトークンをファイルに書き込む
+            ConfigHandler.WriteConfig(configFilePath, refreshToken);
+        }
+        catch (Exception ex)
+        {
+            accessToken = "fallback_token"; // set a fake token when error occurred
+            Console.WriteLine($"Error: {ex.Message}");
+
+            // TODO: リフレッシュトークンが失効した場合の処理を追加;
+        }
+
+
 
         // api reader client: unity -> tesla Fleet API -> vehicle
         ITeslaApiReader apiReader = new TeslaApiReader(accessToken, config.vin);

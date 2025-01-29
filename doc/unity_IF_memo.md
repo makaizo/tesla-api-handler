@@ -48,3 +48,22 @@ https://www.ogis-ri.co.jp/column/iot/column/c106661.html
 
 C#のMQTTnetライブラリはver5だと互換性なく動かないので注意
 https://stackoverflow.com/questions/76359009/missing-mqttnet-client-namespaces-after-upgrading-to-the-latest-version-any-so
+
+# 0127
+## ラズパイ上のプログラムtesla-api-proxy
+python requestsライブラリを使ったプロキシ経由のREST送信だと以下のようなエラーが出て動かない。
+↓ Caused by SSLError localhostの証明に失敗
+![](/doc/images/2025-01-28-07-01-34.png)
+
+↓ 別のポート指定: Caused by NewConnectionError
+![](/doc/images/2025-01-28-07-01-44.png)
+
+今回は妥協策として、http.clientのライブラリを使用。
+→うまくいかない
+![](/doc/images/2025-01-28-07-15-54.png)
+
+curlコマンドをsubprocessで実行
+→うまくいった。上記の原因わからん。。。
+
+
+

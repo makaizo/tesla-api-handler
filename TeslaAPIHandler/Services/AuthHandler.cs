@@ -18,7 +18,7 @@ namespace TeslaAPIHandler.Services
             _httpClient = new HttpClient();
         }
 
-        public async Task<string> RefreshTokenAsync(string refreshToken, string clientID)
+        public async Task<(string accessToken, string refreshToken)> RefreshTokenAsync(string refreshToken, string clientID)
         {
             var requestBody = new
             {
@@ -42,12 +42,12 @@ namespace TeslaAPIHandler.Services
             using var doc = JsonDocument.Parse(jsonResponse);
             JsonElement root = doc.RootElement;
 
-            if (!root.TryGetProperty("access_token", out JsonElement accessTokenElement))
+            if (!root.TryGetProperty("access_token", out JsonElement accessTokenElement) | !root.TryGetProperty("refresh_token", out JsonElement refreshTokenElement))
             {
                 throw new Exception($"[AUTH] Refresh token expired. Response: {jsonResponse}");
             }
 
-            return accessTokenElement.GetString();
+            return (accessTokenElement.GetString(), refreshTokenElement.GetString());
         }
     }
 
