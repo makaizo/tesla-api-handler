@@ -32,22 +32,7 @@ public class Program
             accessToken = "fallback_token"; // set a fake token when error occurred
             Console.WriteLine($"Error: {ex.Message}");
 
-            // Console.WriteLine("Retry refresh token");
-            // try
-            // {
-
-            //     (accessToken, refreshToken) = await authHandler.RefreshTokenAsync(config.refreshToken, config.clientID);
-            //     // Console.WriteLine($"New token: {accessToken}");
-            //     // 新しいリフレッシュトークンをファイルに書き込む
-            //     ConfigHandler.WriteConfig(configFilePath, refreshToken);
-            // }
-            // catch (Exception ex2)
-            // {
-            //     Console.WriteLine($"Error: {ex2.Message}");
-            //     return;
-            // }
-
-
+            // TODO: リフレッシュトークンが失効した場合の処理を追加;
         }
 
 
