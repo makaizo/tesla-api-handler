@@ -12,23 +12,44 @@ Tesla APIをUnityから利用するためのセットアップ手順を説明し
 
 2. 必要なパッケージをインストール
    * 上位のバーから NuGet > Manage NuGet Packages
-   * 以下のパッケージを検索してインストール:
+   * 以下のパッケージを検索してインストール
      * MQTTnet (4.0.2.221)
      * MQTTnet.Extensions.ManagedClient (4.0.2.221)
      * System.Text.Json (9.0.1)
 
-## 2. 認証設定
+## 2. ファイルを配置
 
-1. credentials.jsonをプロジェクトのResourcesフォルダに配置
-   * Resourcesフォルダが無い場合は作成
-   * credentials.jsonに情報を記載
+1. 本環境をコピーしてUnityプロジェクトに配置
+2. `Assets`配下に`StreamingAssets`フォルダを作成
+3. そこに`credentials.json`を用意する
+
+フォルダ構成の例
+
+```
+Assets
+├── StreamingAssets        <--- 追加
+│   └── credentials.json   <--- 追加
+├── tesla-api-handler      <--- 本環境をコピー
+│   ├── doc
+│   └── TeslaAPIHandler
+│       ├── Frontend
+│       │   ├── how_to_setup_unity.md
+│       │   └── ...
+│       ├── Services
+│       │   └── ...
+│       └── ...
+├── Packages
+├── Plugins
+├── Scenes
+└── ...
+```
 
 ## 3. TeslaApiManagerの設定
 
 1. `TeslaApiManager.cs`をGameObjectやCube等にアタッチ
 2. 必要に応じてMockの設定を切り替え
-   * モックを使用（デフォルト）: useMock = true
-   * 本番環境: useMock = false
+   * 本番環境（デフォルト）: useMock = false
+   * モックを使用: useMock = true
 
 ## 4. 動作確認
 

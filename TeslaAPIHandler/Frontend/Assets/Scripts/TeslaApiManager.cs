@@ -4,9 +4,12 @@ using System.Text.Json;
 using UnityEngine;
 using TeslaAPIHandler.Services;
 using TeslaAPIHandler.Services.Mock;
+using System.IO;
 
 public class TeslaApiManager : MonoBehaviour
 {
+    private const string CONFIG_FILENAME = "credentials.json";
+
     [SerializeField]
     private static bool useMock = true;
 
@@ -14,6 +17,7 @@ public class TeslaApiManager : MonoBehaviour
     {
         try
         {
+            InitializeConfigFile();
             await Main(new string[] { });
         }
         catch (Exception ex)
@@ -26,39 +30,43 @@ public class TeslaApiManager : MonoBehaviour
     {
     }
 
-    public static async Task Main(string[] args)
+    public async Task Main(string[] args)
     {
         Debug.Log("Start Main");
 
         // get vin and access_token
-        string configFilePath = "credentials"; // without .json extension
-        var config = ReadConfig(configFilePath);
+        string configFilePath = GetConfigFilePath();
+        var config = ConfigHandler.ReadConfig(configFilePath);
 
-        if (string.IsNullOrEmpty(config.refreshToken) || string.IsNullOrEmpty(config.vin) ||
-            string.IsNullOrEmpty(config.beebotteToken) || string.IsNullOrEmpty(config.clientID))
+        string accessToken;
+        string refreshToken;
+
+        IAuthTokenHandler authHandler = useMock ? new MockAuthTokenHandler() : new AuthTokenHandler();
+
+        try
         {
-            Debug.LogError("Failed to read config file or missing required values");
-            return;
+            (accessToken, refreshToken) = await authHandler.RefreshTokenAsync(config.refreshToken, config.clientID);
+            // Console.WriteLine($"New token: {accessToken}");
+            // 新しいリフレッシュトークンをファイルに書き込む
+            ConfigHandler.WriteConfig(configFilePath, refreshToken);
+        }
+        catch (Exception ex)
+        {
+            accessToken = "fallback_token"; // set a fake token when error occurred
+            Console.WriteLine($"Error: {ex.Message}");
+
+            // TODO: リフレッシュトークンが失効した場合の処理を追加;
         }
 
-        Debug.Log("Config loaded");
+        // api reader client: unity -> tesla Fleet API -> vehicle
+        ITeslaApiReader apiReader = useMock ? new MockTeslaApiReader() : new TeslaApiReader(accessToken, config.vin);
+        // api writer client: unity -> MQTT broker(beebotte server) -> tesla vehicle Commands Proxy on RasPi -> tesla Fleet API -> vehicle
+        ITeslaApiWriter apiWriter = useMock ? new MockTeslaApiWriter() : new TeslaApiWriter(config.beebotteToken, accessToken, config.vin);
 
-        IAuthTokenHandler authHandler = useMock
-            ? new MockAuthTokenHandler()
-            : new AuthTokenHandler();
-        var accessToken = await authHandler.RefreshTokenAsync(config.refreshToken, config.clientID);
-        Debug.Log("New token loaded");
-
-        // API クライアントの初期化
-        ITeslaApiReader apiReader = useMock
-            ? new MockTeslaApiReader()
-            : new TeslaApiReader(accessToken, config.vin);
-        Debug.Log("API reader initialized");
-
-        ITeslaApiWriter apiWriter = useMock
-            ? new MockTeslaApiWriter()
-            : new TeslaApiWriter(config.beebotteToken, accessToken, config.vin);
-        Debug.Log("API writer initialized");
+        if (useMock)
+        {
+            Debug.LogWarning("You are using Mock!! Please set useMock to false.");
+        }
 
         try
         {
@@ -105,6 +113,8 @@ public class TeslaApiManager : MonoBehaviour
             // await apiWriter.ExecuteAsync(command: "adjust_volume", data: new { volume = 5 });
             // await apiWriter.ExecuteAsync(command: "set_bioweapon_mode", data: new { on = true, manual_override = true });
 
+            Debug.Log("Write API is not error occurred");
+
         }
         catch (Exception ex)
         {
@@ -112,26 +122,60 @@ public class TeslaApiManager : MonoBehaviour
         }
     }
 
-    private static (string refreshToken, string vin, string beebotteToken, string clientID) ReadConfig(string fileName)
+
+
+    private static string GetStreamingAssetsPath()
     {
-        try
+
+        if (Application.platform == RuntimePlatform.Android)
         {
-            // Load JSON file from Resources folder
-            TextAsset jsonFile = Resources.Load<TextAsset>(fileName);
-            using var doc = JsonDocument.Parse(jsonFile.text);
-            JsonElement root = doc.RootElement;
-
-            string refreshToken = root.GetProperty("refreshToken").GetString();
-            string vin = root.GetProperty("vin").GetString();
-            string beebotteToken = root.GetProperty("beebotteToken").GetString();
-            string clientID = root.GetProperty("clientID").GetString();
-
-            return (refreshToken, vin, beebotteToken, clientID);
+            return "jar:file://" + Application.dataPath + "!/assets";
         }
-        catch (Exception ex)
+        else if (Application.platform == RuntimePlatform.OSXPlayer) // NOTE:Macは動作未確認
         {
-            Console.WriteLine($"Error reading config file: {ex.Message}");
-            throw;
+            return Application.dataPath + "/Resources/Data/StreamingAssets";
+        }
+        else
+        {
+            return Application.streamingAssetsPath;
+        }
+    }
+
+    private static string GetConfigFilePath()
+    {
+        return Path.Combine(Application.persistentDataPath, CONFIG_FILENAME);
+    }
+
+    private void InitializeConfigFile()
+    {
+        string persistentPath = GetConfigFilePath();
+        Debug.Log($"persistentPath: {persistentPath}");
+
+        if (!File.Exists(persistentPath))
+        {
+            string streamingPath = Path.Combine(GetStreamingAssetsPath(), CONFIG_FILENAME);
+            Debug.Log($"streamingPath: {streamingPath}");
+#if UNITY_EDITOR
+            File.Copy(streamingPath, persistentPath);
+#elif UNITY_ANDROID
+            using (UnityWebRequest www = UnityWebRequest.Get(streamingPath))
+            {
+                var operation = www.SendWebRequest();
+                while (!operation.isDone)
+                    await Task.Yield();
+
+                if (www.result == UnityWebRequest.Result.Success)
+                {
+                    File.WriteAllBytes(persistentPath, www.downloadHandler.data);
+                }
+                else
+                {
+                    Debug.LogError($"Failed to download file: {www.error}");
+                    throw new Exception($"Failed to download file: {www.error}");
+                }
+            }
+#endif
+            Debug.Log($"File copied is {File.Exists(persistentPath)})");
         }
     }
 }
