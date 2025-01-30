@@ -11,7 +11,7 @@ public class TeslaApiManager : MonoBehaviour
     private const string CONFIG_FILENAME = "credentials.json";
 
     [SerializeField]
-    private static bool useMock = true;
+    private static bool useMock = false;
 
     async void Start()
     {
