@@ -6,17 +6,17 @@ namespace TeslaAPIHandler.Services.Mock
     {
         public Task<int?> GetBatteryLevelAsync()
         {
-            return Task.FromResult<int?>(85);
+            return Task.FromResult<int?>(12);
         }
 
         public Task<string?> GetLocationAsync()
         {
-            return Task.FromResult<string?>("{\"latitude\":35.6812,\"longitude\":139.7671}");
+            return Task.FromResult<string?>("{\"latitude\":12.3456,\"longitude\":789.1234}");
         }
 
         public Task<int?> GetSpeedAsync()
         {
-            return Task.FromResult<int?>(60);
+            return Task.FromResult<int?>(34);
         }
     }
 }
