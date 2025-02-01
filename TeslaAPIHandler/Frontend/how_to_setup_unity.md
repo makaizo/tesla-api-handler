@@ -47,14 +47,20 @@ Assets
 ## 3. TeslaApiManagerの設定
 
 1. `TeslaApiManager.cs`をGameObjectやCube等にアタッチ
-2. 必要に応じてMockの設定を切り替え
-   * 本番環境（デフォルト）: useMock = false
-   * モックを使用: useMock = true
 
 ## 4. 動作確認
 
 1. プロジェクトを実行
 2. コンソールログで取得データを確認
+
+## 補足：Mockの設定
+
+必要に応じてMockを利用するかどうかを設定できます。
+API使えない時に仮の値でUIのテスト等をする場合に利用ください
+
+* useMock
+  * false : 通常環境（デフォルト）
+  * true : モックを使用
 
 ## 補足：パッケージ参照情報
 

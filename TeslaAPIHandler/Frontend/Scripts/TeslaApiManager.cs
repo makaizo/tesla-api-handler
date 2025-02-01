@@ -1,23 +1,26 @@
 using System;
 using System.Threading.Tasks;
-using System.Text.Json;
 using UnityEngine;
 using TeslaAPIHandler.Services;
 using TeslaAPIHandler.Services.Mock;
 using System.IO;
+#if UNITY_ANDROID
+using UnityEngine.Networking;
+#endif
 
 public class TeslaApiManager : MonoBehaviour
 {
     private const string CONFIG_FILENAME = "credentials.json";
 
     [SerializeField]
+    // NOTE: モックを使う場合はtrueにする。API使えない時に仮の値でUIのテスト等をする場合に利用ください
     private static bool useMock = false;
 
     async void Start()
     {
         try
         {
-            InitializeConfigFile();
+            await InitializeConfigFile();
             await Main(new string[] { });
         }
         catch (Exception ex)
@@ -146,7 +149,7 @@ public class TeslaApiManager : MonoBehaviour
         return Path.Combine(Application.persistentDataPath, CONFIG_FILENAME);
     }
 
-    private void InitializeConfigFile()
+    private async Task InitializeConfigFile()
     {
         string persistentPath = GetConfigFilePath();
         Debug.Log($"persistentPath: {persistentPath}");
