@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 
 namespace TeslaAPIHandler.Services
 {
