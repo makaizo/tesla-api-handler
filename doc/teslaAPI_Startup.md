@@ -204,6 +204,13 @@ echo 'export PATH=$PATH:~/go/bin/linux_arm64' >> ~/.bashrc
 source ~/.bashrc
 ```
 
+### コマンドの使い方
+以下のコマンドでサーバを起動する。起動した状態で[httpリクエストを送ればよい](###Sending_commands_to_the_proxy_server)
+```
+tesla-http-proxy -tls-key ~/makaizou/tesla-api-proxy/key_for_wolfy/config/tls-key.pem -cert ~/makaizou/tesla-api-proxy/key_for_wolfy/config/tls-cert.pem -key-file 
+~/makaizou/tesla-api-proxy/key_for_wolfy/config/fleet-key.pem -port 4443
+```
+
 # コマンドメモ
 
 export TESLA_AUTH_TOKEN=ey------
