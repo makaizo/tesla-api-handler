@@ -86,16 +86,16 @@ curl --header "Content-Type: application/json" ^
 参考：[作成済みpostman](###Third-Party-Token取得)
 ここだけPostmanを利用した。PKCE付きのOAuthでトークン取得を簡単にできるみたいなので。
 PostmanでWorkspaceつくって以下のNewRequestを押す
-![alt text](img/image-1.png)
+![alt text](images/image-1.png)
 
 
 以下の情報を入力してGetNewAccessTokenを押す
 
-![alt text](img/image-2.png)
-![alt text](img/image-3.png)
+![alt text](images/image-2.png)
+![alt text](images/image-3.png)
 
 認可画面が表示され、トークン取得できる
-![alt text](img/image.png)
+![alt text](images/image.png)
 
 ##### 補足
 [公式のThirdPartyToken発行の流れ](https://developer.tesla.com/docs/fleet-api/authentication/third-party-tokens)は以下だが、Postmanはまとめてやってくれる
@@ -119,12 +119,12 @@ PostmanでWorkspaceつくって以下のNewRequestを押す
 
 ### FleetAPIを自分のworkspaceにコピー
 create a fork -> Environmentを選択 -> fork collections
-![create a fork](img/image-5.png)
-![Environmentを選択](img/image-6.png)
+![create a fork](images/image-5.png)
+![Environmentを選択](images/image-6.png)
 
 以下は自分のworkspace上で
 ### environmentの設定
-![alt text](img/image-4.png)
+![alt text](images/image-4.png)
 作業進めていくと得られたtokenなどから自動で環境変数を更新してくれる（postmanのtestスクリプトから自動更新される）
 
 ### collectionの部分を順番に作業
@@ -137,7 +137,7 @@ Generate Partner Token -> Register
 # 0113
 command側はセキュリティ強化のため、車両アクセス時に車両側でアプリ認証を行う。
 PC上にプロキシサーバを起動して、プロキシサーバを経由してコマンドの署名を行い、車両アクセス時に車両内で署名検証を行う仕組みになっており、環境構築などが必要。
-![alt text](img/image12.png)
+![alt text](images/image12.png)
 
 公式[4]：https://developer.tesla.com/docs/fleet-api/endpoints/vehicle-commands#:~:text=Vehicle%20commands%20allow%20direct%20interaction%20with%20a%20vehicle.%20To%20accept%20commands%2C%20a%20vehicle%20must%20have%20an%20application%27s%20Fleet%20Key%20installed.%20The%20command%20must%20be%20sent%20through%20the%20Vehicle%20Commands%20Proxy%20to%20send%20commands.
 公式[5]：https://github.com/teslamotors/vehicle-command
@@ -170,7 +170,7 @@ windowsではうまくいかなかったのでwsl2で実施した
 ### Running the proxy server
 秘密鍵をfleet-key.pemとして配置
 あとはそのまま
-![alt text](img/image10.png)
+![alt text](images/image10.png)
 
 ### Sending commands to the proxy server
 コマンド上のcert.pem(TLS証明書)は、作成済みのtls-cert.pemなので、コマンドを以下に変更
@@ -178,7 +178,7 @@ windowsではうまくいかなかったのでwsl2で実施した
 ```
 curl --cacert ./config/tls-cert.pem     --header 'Content-Type: application/json'     --header "Authorization: Bearer $TESLA_AUTH_TOKEN"     --data '{}'     "https://localhost:4443/api/1/vehicles/$VIN/command/flash_lights"      
 ```
-![alt text](img/image11.png)
+![alt text](images/image11.png)
 
 
 # 0126
