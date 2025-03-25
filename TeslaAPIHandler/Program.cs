@@ -70,23 +70,25 @@ public class Program
             // Console.WriteLine($"WakeUp: {result}");
 
             // 他のコマンドはラズパイのサーバ起動後に、実行されるため、デバッグ時に何度も実行しても問題ない
-            // await apiWriter.ExecuteAsync(command: "actuate_trunk", data: new { which_trunk = "front" });
+            // await apiWriter.ExecuteAsync(command: "actuate_trunk", data: new { which_trunk = "rear" }); // front or rear (frontは手動でしか閉められないので注意)
             await apiWriter.ExecuteAsync(command: "door_lock");
             // await apiWriter.ExecuteAsync(command: "door_unlock");
             // await apiWriter.ExecuteAsync(command: "flash_lights");
-            // await apiWriter.ExecuteAsync(command: "window_control", data: new { lat = 45, lon = 45, command = "close" });
+            // await apiWriter.ExecuteAsync(command: "honk_horn");
 
-            // // remote_boombox
-            // //  Sound IDs:
-            // //      0:random fart 
-            // //      2000: locate ping
-            // await apiWriter.ExecuteAsync(command: "remote_boombox", data: new { sound = 0 });
+            // await apiWriter.ExecuteAsync(command: "media_next_fav");
+            // await apiWriter.ExecuteAsync(command: "media_next_track");
+            // await apiWriter.ExecuteAsync(command: "media_prev_fav");
+            // await apiWriter.ExecuteAsync(command: "media_prev_track");
+            // await apiWriter.ExecuteAsync(command: "media_toggle_playback");
+            // await apiWriter.ExecuteAsync(command: "media_volume_down");
+            // await apiWriter.ExecuteAsync(command: "adjust_volume", data: new { volume = 5.0 }); // A floating point number from 0.0 to 11.0.
+
+            // await apiWriter.ExecuteAsync(command: "window_control", data: new { lat = 45, lon = 45, command = "close" }); // 車内の座標を指定しないと閉められない
+            // await apiWriter.ExecuteAsync(command: "remote_boombox", data: new { sound = 0 });  // Sound IDs...0:random fart, 2000: locate ping
             // await apiWriter.ExecuteAsync(command: "auto_conditioning_start");
             // await apiWriter.ExecuteAsync(command: "auto_conditioning_stop");
-            // await apiWriter.ExecuteAsync(command: "media_toggle_playback");
-            // await apiWriter.ExecuteAsync(command: "adjust_volume", data: new { volume = 5 });
             // await apiWriter.ExecuteAsync(command: "set_bioweapon_mode", data: new { on = true, manual_override = true });
-
         }
         catch (Exception ex)
         {
