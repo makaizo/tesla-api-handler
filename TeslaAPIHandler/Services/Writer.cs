@@ -92,7 +92,6 @@ namespace TeslaAPIHandler.Services
             try
             {
                 await PublishAsync(topic, payload);
-                Console.WriteLine($"[WRITE] published {topic}");
             }
             catch (Exception ex)
             {

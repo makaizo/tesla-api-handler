@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET 9 Launch TeslaAPIHandler",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/TeslaAPIHandler/bin/Debug/net9.0/TeslaAPIHandler.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/TeslaAPIHandler",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}

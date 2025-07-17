@@ -12,4 +12,10 @@
     <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.0.2.221" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Frontend/**" />
+    <EmbeddedResource Remove="Frontend/**" />
+    <None Remove="Frontend/**" />
+  </ItemGroup>
+
 </Project>
