@@ -6,7 +6,7 @@
 * credentials.jsonはvinやトークンなどの機密情報を含むため、個別に送る。（githubへアップロードしないこと）
 
 ## システム構成
-![システム構成](/doc/images/2025-01-25-09-04-59.png)
+![システム構成](./images/2025-01-25-09-04-59.png)
 
 ## TeslaFleetAPIの料金
 https://developer.tesla.com/docs/fleet-api/billing-and-limits

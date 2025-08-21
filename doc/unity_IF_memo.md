@@ -35,14 +35,14 @@ WindowsPC上でプロキシサーバ（VehicleCommandProxy）立てて他PCか�
 Unity -> MQTT broker(beebotte server) -> tesla vehicle Commands Proxy on RasPi -> tesla Fleet API -> vehicle
 （Unity -> AWS MQTT -> AWS上に立てたプロキシ -> FleetAPI という方法だとやりやすいかも。今後Tryしてみたい）
 
-![システム構成](/doc/images/2025-01-25-09-04-59.png)
+![システム構成](./images/2025-01-25-09-04-59.png)
 
 # 0125
 ## C#でMQTT経由でWrite系APIをたたくIFを実装
 MQTTは基本pub/subだがreq/resはどうするか？今回はwriteAPIたたいたときにエラーだけは返したい。
 仕組みとしては以下のようにerrorのトピックを用意すればよい。apiの種類ごとには用意しなくていいかな
 https://www.ogis-ri.co.jp/column/iot/column/c106661.html
-![](/doc/images/2025-01-25-09-14-23.png)
+![](./images/2025-01-25-09-14-23.png)
 →一旦確認簡単な2で進める
 
 
@@ -53,14 +53,14 @@ https://stackoverflow.com/questions/76359009/missing-mqttnet-client-namespaces-a
 ## ラズパイ上のプログラムtesla-api-proxy
 python requestsライブラリを使ったプロキシ経由のREST送信だと以下のようなエラーが出て動かない。
 ↓ Caused by SSLError localhostの証明に失敗
-![](/doc/images/2025-01-28-07-01-34.png)
+![](./images/2025-01-28-07-01-34.png)
 
 ↓ 別のポート指定: Caused by NewConnectionError
-![](/doc/images/2025-01-28-07-01-44.png)
+![](./images/2025-01-28-07-01-44.png)
 
 今回は妥協策として、http.clientのライブラリを使用。
 →うまくいかない
-![](/doc/images/2025-01-28-07-15-54.png)
+![](./images/2025-01-28-07-15-54.png)
 
 curlコマンドをsubprocessで実行
 →うまくいった。上記の原因わからん。。。
